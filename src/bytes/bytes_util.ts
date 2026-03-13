@@ -18,12 +18,14 @@ function xorBytes(array1: Uint8Array, array2: Uint8Array) {
 }
 
 /**
- * xor two number or Uint8Array
+ * xor two numbers or two Uint8Arrays
  * @param a
  * @param b
  * @returns
  */
-function xor<T = number | Uint8Array>(a: T, b: T) {
+function xor(a: number, b: number): Uint8Array
+function xor(a: Uint8Array, b: Uint8Array): Uint8Array
+function xor(a: number | Uint8Array, b: number | Uint8Array): Uint8Array {
   if (typeof a === 'number' && typeof b === 'number') {
     return Uint8Array.from([a ^ b])
   } else if (a instanceof Uint8Array && b instanceof Uint8Array) {
@@ -37,7 +39,7 @@ function xor<T = number | Uint8Array>(a: T, b: T) {
  * @param value Uint8Array
  * @returns string
  */
-function bytes2BinStr(value: Uint8Array) {
+function bytes2BinStr(value: Uint8Array): string {
   return value.reduce((str, byte) => str + byte.toString(2).padStart(8, '0'), '')
 }
 
@@ -46,7 +48,7 @@ function bytes2BinStr(value: Uint8Array) {
  * @param value such as '00000001'
  * @returns
  */
-function binStr2Bytes(value: string) {
+function binStr2Bytes(value: string): Uint8Array {
   const length = value.length / 8
   const result = new Uint8Array(length)
 
@@ -62,7 +64,7 @@ function binStr2Bytes(value: string) {
  * @param value
  * @returns
  */
-function bytes2Int(value: Uint8Array) {
+function bytes2Int(value: Uint8Array): number {
   return parseInt(encodeHex(value), 16)
 }
 
@@ -71,7 +73,7 @@ function bytes2Int(value: Uint8Array) {
  * @param value
  * @returns
  */
-function int2Bytes(value: number) {
+function int2Bytes(value: number): Uint8Array {
   return Uint8Array.from([value])
 }
 
@@ -81,7 +83,7 @@ function int2Bytes(value: number) {
  * @param value
  * @returns
  */
-function bytes2HexStr(value: Uint8Array) {
+function bytes2HexStr(value: Uint8Array): string {
   return encodeHex(value)
 }
 
@@ -91,7 +93,7 @@ function bytes2HexStr(value: Uint8Array) {
  * @param value
  * @returns
  */
-function hexStr2Bytes(value: string) {
+function hexStr2Bytes(value: string): Uint8Array {
   return decodeHex(value)
 }
 
@@ -101,7 +103,7 @@ function hexStr2Bytes(value: string) {
  *
  * @param data  Uint8Array
  */
-function chunkBytes(data: Uint8Array, chunkLength: number) {
+function chunkBytes(data: Uint8Array, chunkLength: number): Uint8Array[] {
   if (chunkLength <= 0) {
     throw new Error('chunkLength must be greater than 0')
   }

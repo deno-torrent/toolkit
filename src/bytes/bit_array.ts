@@ -10,7 +10,7 @@ export class BitArray {
     this.#data = data
   }
 
-  toBigInt() {
+  toBigInt(): bigint {
     return BigInt(`0b${this.toString()}`)
   }
 
@@ -18,7 +18,7 @@ export class BitArray {
    * create a bit array from a binary string, e.g. 0101 0101
    * @param data the binary string, e.g. 0101 0101
    */
-  static fromBinaryString(data: string) {
+  static fromBinaryString(data: string): BitArray {
     // check the data is a binary string
     if (!BitArray.isBinaryString(data)) {
       throw new Error(`data ${data} is not a binary string`)
@@ -41,7 +41,7 @@ export class BitArray {
    * @param data
    * @returns
    */
-  static fromUnit8Array(data: Uint8Array) {
+  static fromUnit8Array(data: Uint8Array): BitArray {
     return new BitArray(data)
   }
 
@@ -51,7 +51,7 @@ export class BitArray {
    * @param length the bit length of the number, if the bit length of the number is less than length, fill the number with 0 from the highest bit
    * @returns
    */
-  static fromInt(data: number, length = 0) {
+  static fromInt(data: number, length = 0): BitArray {
     // if number is not a integer, throw an error
     if (!Number.isInteger(data)) {
       throw new Error(`data ${data} is not a integer`)
@@ -73,7 +73,7 @@ export class BitArray {
    * @param length the bit length of the number, if the bit length of the number is less than length, fill the number with 0 from the highest bit
    * @returns
    */
-  static fromBigInt(data: bigint, length = 0) {
+  static fromBigInt(data: bigint, length = 0): BitArray {
     // if number is not a unit number, throw an error
     if (data < 0n) {
       throw new Error(`data ${data} is not a uint number`)
@@ -84,7 +84,7 @@ export class BitArray {
     return this.fromBinaryString(data.toString(2).padStart(safeLength, '0'))
   }
 
-  static isBinaryString(data: string) {
+  static isBinaryString(data: string): boolean {
     if (data.length === 0) return false
 
     // if data has any character other than 0 and 1, it is not a binary string
@@ -99,14 +99,14 @@ export class BitArray {
   /**
    * get the length of the bit array
    */
-  get length() {
+  get length(): number {
     return this.#data.length * 8
   }
 
   /**
    * get the bytes of the bit array
    */
-  get bytes() {
+  get bytes(): Uint8Array {
     return this.#data
   }
 
@@ -115,11 +115,11 @@ export class BitArray {
    * @param other
    * @returns
    */
-  greaterThan(other: BitArray) {
+  greaterThan(other: BitArray): boolean {
     return this.toBigInt() > other.toBigInt()
   }
 
-  greaterThanOrEqual(other: BitArray) {
+  greaterThanOrEqual(other: BitArray): boolean {
     return this.greaterThan(other) || this.equals(other)
   }
 
@@ -128,11 +128,11 @@ export class BitArray {
    * @param other
    * @returns
    */
-  lessThan(other: BitArray) {
+  lessThan(other: BitArray): boolean {
     return this.toBigInt() < other.toBigInt()
   }
 
-  lessThanOrEqual(other: BitArray) {
+  lessThanOrEqual(other: BitArray): boolean {
     return this.lessThan(other) || this.equals(other)
   }
 
@@ -141,7 +141,7 @@ export class BitArray {
    * @param other
    * @returns
    */
-  equals(other: BitArray) {
+  equals(other: BitArray): boolean {
     return this.toBigInt() == other.toBigInt()
   }
 
@@ -150,7 +150,7 @@ export class BitArray {
    * @param other the other bit array
    * @returns a new bit array
    */
-  xor(other: BitArray) {
+  xor(other: BitArray): BitArray {
     const data = new Uint8Array(this.#data.length)
     for (let i = 0; i < this.#data.length; i++) {
       data[i] = this.#data[i] ^ other.#data[i]
@@ -164,7 +164,7 @@ export class BitArray {
    * @param value the value of the bit
    * @param zeroIndex the index of the zero bit, lowest or highest, default is lowest ,if the bit array is 1010 1010, the lowest zero bit is 0, the highest zero bit is 7
    */
-  set(index: number, value: boolean, zeroIndex: 'lowest' | 'highest' = 'lowest') {
+  set(index: number, value: boolean, zeroIndex: 'lowest' | 'highest' = 'lowest'): void {
     // out of range check
     if (index < 0 || index >= this.length) {
       throw new Error(`index ${index} out of range`)
@@ -177,7 +177,7 @@ export class BitArray {
     }
   }
 
-  setBitFromHighest(index: number, value: boolean) {
+  setBitFromHighest(index: number, value: boolean): void {
     // calculate the byte index which contains the bit
     const byteIndex = this.getByteIndex(index, 'highest')
     const byte = this.#data[byteIndex]
@@ -193,7 +193,7 @@ export class BitArray {
     }
   }
 
-  setBitFromLowest(index: number, value: boolean) {
+  setBitFromLowest(index: number, value: boolean): void {
     // calculate the byte index which contains the bit
     const byteIndex = this.getByteIndex(index, 'lowest')
     const byte = this.#data[byteIndex]
@@ -293,15 +293,15 @@ export class BitArray {
    * print the bit array as a binary string, e.g. 0101 0101
    * @returns
    */
-  toString() {
+  toString(): string {
     return this.#data.reduce((prev, curr) => prev + curr.toString(2).padStart(8, '0'), '')
   }
 
-  toIntString() {
+  toIntString(): string {
     return this.toBigInt().toString()
   }
 
-  toHexString() {
+  toHexString(): string {
     return BytesUtil.bytes2HexStr(this.#data)
   }
 
@@ -309,7 +309,7 @@ export class BitArray {
    * return a index array include the index of the different bits
    * @param other
    */
-  diff(other: BitArray) {
+  diff(other: BitArray): number[] {
     // if the length of the bit array is not equal, throw an error
     if (this.length !== other.length) {
       throw new Error(`the length of the bit array is not equal, diff failed`)

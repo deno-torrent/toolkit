@@ -6,7 +6,7 @@ import { decodeHex, encodeHex } from '@std/encoding/hex'
  * check is base64 string
  * @param value
  */
-function isBase64Str(value: string) {
+function isBase64Str(value: string): boolean {
   if (value.length === 0) {
     return false
   }
@@ -22,7 +22,7 @@ function isBase64Str(value: string) {
  * check is hex string
  * @param value
  */
-function isHexStr(value: string) {
+function isHexStr(value: string): boolean {
   if (value.length === 0) {
     return false
   }
@@ -34,7 +34,7 @@ function isHexStr(value: string) {
  * check is base32 string
  * @param value
  */
-function isBase32Str(value: string) {
+function isBase32Str(value: string): boolean {
   if (value.length === 0) {
     return false
   }
@@ -48,7 +48,7 @@ function isBase32Str(value: string) {
  * @param hash
  * @returns
  */
-function isSha1HexStr(hash: string) {
+function isSha1HexStr(hash: string): boolean {
   return hash.length === 40 && isHexStr(hash)
 }
 
@@ -59,7 +59,7 @@ function isSha1HexStr(hash: string) {
  * @param hash
  * @returns
  */
-function isSha1Base32Str(hash: string) {
+function isSha1Base32Str(hash: string): boolean {
   return hash.length === 32 && isBase32Str(hash)
 }
 

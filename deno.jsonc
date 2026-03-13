@@ -1,5 +1,5 @@
 {
-  "name": "@sloaix/toolkit",
+  "name": "@deno-torrent/toolkit",
   "version": "1.0.1",
   "exports": "./mod.ts",
   "imports": {
