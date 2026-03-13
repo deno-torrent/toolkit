@@ -1,0 +1,17 @@
+# Deno
+.deno/
+
+# Editor
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Temp / build
+*.tmp
+*.log
+dist/

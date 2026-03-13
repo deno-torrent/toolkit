@@ -1,112 +1,161 @@
-import { BufReader } from 'std/io/buf_reader.ts'
-import { Buffer } from 'std/io/buffer.ts'
-import { Reader } from 'std/io/mod.ts'
+/**
+ * MultiFileReader — reads multiple files as a single contiguous byte stream.
+ *
+ * @example
+ * ```ts
+ * const reader = new MultiFileReader(['a.bin', 'b.bin', 'c.bin']);
+ * let chunk: Uint8Array | null;
+ * while ((chunk = await reader.readChunk(512)) !== null) {
+ *   // process chunk…
+ * }
+ * reader.close();
+ * ```
+ * @module
+ */
+
+import { SimpleBuffer } from './simple_buffer.ts'
 
 /**
- * MultiFileReader read multiple files as one file
+ * Presents an ordered list of files as a single readable byte stream.
+ *
+ * File handles are opened lazily and closed as soon as their EOF is reached,
+ * so only one handle is open at a time.
+ *
+ * ### Read primitives
+ * | Method | Description |
+ * |---|---|
+ * | {@link MultiFileReader.read} | Low-level; fills a caller-supplied buffer, may cross to the next file transparently. |
+ * | {@link MultiFileReader.readChunk} | High-level; returns exactly `length` bytes, crossing file boundaries as needed. |
  */
-export class MultiFileReader implements Reader {
-  readonly #buf: Buffer = new Buffer()
-  readonly #rd = new BufReader(this.#buf)
+export class MultiFileReader {
   readonly #files: string[]
-  readonly #rdMap: Map<string, Deno.FsFile> = new Map()
-  #curFile // 当前读取的文件
-  #eof = false // 是否读取到最后一个文件的末尾
+  #fileIndex = 0
+  #currentFile: Deno.FsFile | null = null
+  #eof = false
+  /** Accumulator used by readChunk across multiple read() calls. */
+  readonly #accumulator = new SimpleBuffer()
 
+  /**
+   * @param files - Ordered list of file paths to read through.
+   * @throws {RangeError} If `files` is empty.
+   */
   constructor(files: string[]) {
-    // 初始化的时候,不创建文件读取器,只创建文件路径的映射
+    if (files.length === 0) throw new RangeError('files must not be empty')
     this.#files = [...files]
-    this.#curFile = this.#files[0]
   }
 
-  /**
-   * 是否有下一个文件
-   * @returns boolean true:有下一个文件,false:没有下一个文件
-   */
-  private hasNextFile() {
-    const index = this.#files.indexOf(this.#curFile)
-    const lastIndex = this.#files.length - 1
-    return index < lastIndex
-  }
+  // ---------------------------------------------------------------------------
+  // Low-level read
+  // ---------------------------------------------------------------------------
 
   /**
-   * 如果有三个文件,大小分别是13,1,1,p的长度是20,则每次读取的大小分别是13,1,1,null
-   * @param p 用来存储读取数据的字节数组
-   * @returns 读取的长度
+   * Reads bytes into `p`, advancing through files transparently at each EOF.
+   *
+   * Follows the `Deno.Reader` contract: returns the number of bytes placed
+   * into `p`, or `null` when every file has been fully consumed.
+   *
+   * @param p - Destination buffer.
+   * @returns Number of bytes written into `p`, or `null` at end-of-stream.
    */
-  public async read(p: Uint8Array): Promise<number | null> {
+  async read(p: Uint8Array): Promise<number | null> {
     if (this.#eof) return null
+    if (p.length === 0) return 0
 
-    let reader = this.#rdMap.get(this.#curFile)
-    if (!reader) {
-      // 如果文件读取器不存在,则创建文件读取器
-      reader = await Deno.open(this.#curFile, { read: true })
-      // 并且将文件读取器缓存到 readerMap 中
-      this.#rdMap.set(this.#curFile, reader)
+    // Open current file lazily.
+    if (this.#currentFile === null) {
+      this.#currentFile = await Deno.open(this.#files[this.#fileIndex], { read: true })
     }
 
-    const result = await reader.read(p)
+    const n = await this.#currentFile.read(p)
 
-    // null 表示当前文件读取完毕
-    if (result === null) {
-      // 关闭当前文件读取器
-      reader.close()
-      this.#rdMap.delete(this.#curFile)
+    if (n === null) {
+      // Current file exhausted — close it and advance to the next.
+      this.#currentFile.close()
+      this.#currentFile = null
+      this.#fileIndex++
 
-      // 已经是最后一个文件, 返回null,表示所有文件读取完毕
-      if (!this.hasNextFile()) {
+      if (this.#fileIndex >= this.#files.length) {
         this.#eof = true
         return null
-      } else {
-        // 不是最后一个文件,移动到下一个文件
-        this.#curFile = this.#files[this.#files.indexOf(this.#curFile) + 1]
-
-        // 递归调用 read 函数,读取下一个文件
-        return this.read(p)
       }
+
+      return this.read(p)
     }
-    return result
+
+    return n
   }
 
+  // ---------------------------------------------------------------------------
+  // High-level chunk read
+  // ---------------------------------------------------------------------------
+
   /**
-   * 读取指定长度的字节,不同于上面的read,这个函数不会将文件分割成多个块,而是将多个文件视为一个整体,读取指定长度的字节
-   * 如果有三个文件,大小分别是13,1,1,指定读取长度是20,则每次读取的大小分别是15,null
+   * Collects exactly `length` bytes, spanning file boundaries as needed.
    *
-   * @param length 读取的长度
-   * @returns 读取到的字节数组,如果读取完毕,则返回null
+   * If the remaining bytes across all files sum to less than `length`, the
+   * partial data already accumulated is returned. Returns `null` only when the
+   * entire stream was already exhausted before this call.
+   *
+   * @param length - Desired chunk size in bytes (must be a positive integer).
+   * @returns A `Uint8Array` of at most `length` bytes, or `null` at EOS.
+   * @throws {RangeError} If `length` is not a positive integer.
    */
-  public async readChunk(length: number): Promise<Uint8Array | null> {
-    while (true) {
-      const tempChunk = new Uint8Array(length)
-      const result = await this.read(tempChunk)
+  async readChunk(length: number): Promise<Uint8Array | null> {
+    if (!Number.isInteger(length) || length <= 0) {
+      throw new RangeError(`length must be a positive integer, got ${length}`)
+    }
 
-      // 已经读取完毕
-      if (result === null) {
-        // 如果还有缓存,则返回缓存中的字节
-        if (!this.#buf.empty()) {
-          return await this.#rd.readFull(new Uint8Array(this.#buf.length))
-        } else {
-          return null
-        }
+    if (this.#eof && !this.#accumulator.hasNext()) return null
+
+    const tmp = new Uint8Array(length)
+
+    while (this.#accumulator.length < length) {
+      const n = await this.read(tmp)
+
+      if (n === null) {
+        // Stream ended — return whatever accumulated bytes remain.
+        return this.#accumulator.hasNext()
+          ? this.#accumulator.readBytes(this.#accumulator.length)
+          : null
       }
 
-      // 将读取到的字节写入缓存
-      await this.#buf.write(tempChunk.subarray(0, result))
+      this.#accumulator.write(tmp.subarray(0, n))
+    }
 
-      // 如果buffer字节超过或者 length,回调 buffers 中的前 length 字节
-      // 循环回调,直到 buffer 字节小于 length
-      if (this.#buf.length >= length) {
-        return await this.#rd.readFull(new Uint8Array(length))
+    return this.#accumulator.readBytes(length)
+  }
+
+  // ---------------------------------------------------------------------------
+  // Lifecycle
+  // ---------------------------------------------------------------------------
+
+  /**
+   * Closes any currently open file handle.
+   *
+   * Should be called when you stop reading before the stream is naturally
+   * exhausted, to avoid leaking OS file descriptors.
+   */
+  close(): void {
+    if (this.#currentFile !== null) {
+      try {
+        this.#currentFile.close()
+      } catch {
+        // Already closed — ignore.
       }
+      this.#currentFile = null
     }
   }
 
   /**
-   * 重置读取器,将读取器重置到初始状态
+   * Resets the reader back to the beginning of the first file.
+   *
+   * The currently open file handle (if any) is closed and the internal
+   * accumulator is cleared.
    */
-  public reset(): void {
-    this.#buf.reset()
-    this.#curFile = this.#files[0]
+  reset(): void {
+    this.close()
+    this.#fileIndex = 0
     this.#eof = false
+    this.#accumulator.reset()
   }
 }

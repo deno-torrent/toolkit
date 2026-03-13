@@ -1,4 +1,4 @@
-import { assertEquals, assertThrows } from 'std/assert/mod.ts'
+import { assertEquals, assertThrows } from '@std/assert'
 
 import { BitArray, BytesUtil } from '../../mod.ts'
 

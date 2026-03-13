@@ -1,4 +1,4 @@
-import { assertEquals } from 'std/assert/assert_equals.ts'
+import { assertEquals } from '@std/assert'
 import { EncodeUtil } from './encode_util.ts'
 
 Deno.test('test EncodeUtil.isBase64Str', () => {

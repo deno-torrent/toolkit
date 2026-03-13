@@ -1,4 +1,4 @@
-import { decodeHex, encodeHex } from 'std/encoding/hex.ts'
+import { decodeHex, encodeHex } from '@std/encoding/hex'
 
 /**
  * array1 xor array2, if array1.length !== array2.length, min(array1.length, array2.length) will be used
@@ -77,7 +77,7 @@ function int2Bytes(value: number) {
 
 /**
  * convert Uint8Array to hex string
- * @deprecated use std/encoding/hex.ts encodeHex instead
+ * @deprecated Use `encodeHex` from `@std/encoding/hex` directly.
  * @param value
  * @returns
  */

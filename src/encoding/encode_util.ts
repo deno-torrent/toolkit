@@ -1,6 +1,6 @@
-import { decodeBase32, encodeBase32 } from 'std/encoding/base32.ts'
-import { decodeBase64, encodeBase64 } from 'std/encoding/base64.ts'
-import { decodeHex, encodeHex } from 'std/encoding/hex.ts'
+import { decodeBase32, encodeBase32 } from '@std/encoding/base32'
+import { decodeBase64, encodeBase64 } from '@std/encoding/base64'
+import { decodeHex, encodeHex } from '@std/encoding/hex'
 
 /**
  * check is base64 string

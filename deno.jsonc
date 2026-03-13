@@ -1,13 +1,32 @@
 {
+  "name": "@sloaix/toolkit",
+  "version": "1.0.1",
+  "exports": "./mod.ts",
   "imports": {
-    "std/": "https://deno.land/std@0.217.0/"
+    "@std/encoding": "jsr:@std/encoding@^1.0.10",
+    "@std/assert": "jsr:@std/assert@^1.0.12"
   },
   "tasks": {
-    "test": "deno test -A --unstable-net"
+    "test": "deno test -A",
+    "fmt": "deno fmt",
+    "lint": "deno lint",
+    "check": "deno check mod.ts"
   },
   "test": {
-    "include": [
-      "./src"
-    ]
+    "include": ["./src"]
+  },
+  "fmt": {
+    "useTabs": false,
+    "lineWidth": 100,
+    "indentWidth": 2,
+    "singleQuote": true,
+    "proseWrap": "preserve",
+    "include": ["src/", "mod.ts"]
+  },
+  "lint": {
+    "include": ["src/", "mod.ts"],
+    "rules": {
+      "tags": ["recommended"]
+    }
   }
 }
