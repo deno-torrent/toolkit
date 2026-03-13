@@ -89,3 +89,19 @@ Deno.test('str2IPv4Bytes', () => {
   assertEquals(NetUtil.ipv4Str2Bytes('192.168.1.256'), undefined)
   assertEquals(NetUtil.ipv4Str2Bytes('192.168.1'), undefined)
 })
+
+Deno.test('getMacAddr', () => {
+  const result = NetUtil.getMacAddr()
+  if (result === undefined) return
+  // each entry must be a valid lowercase colon-separated MAC
+  const macRegex = /^([0-9a-f]{2}:){5}[0-9a-f]{2}$/
+  for (const mac of result) {
+    assertEquals(macRegex.test(mac), true)
+  }
+  // no zero MAC
+  assertEquals(result.includes('00:00:00:00:00:00'), false)
+  // no duplicates
+  assertEquals(result.length, new Set(result).size)
+  // sorted
+  assertEquals(result, [...result].sort())
+})

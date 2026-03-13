@@ -89,54 +89,17 @@ function ipv4Str2Bytes(value?: string): Uint8Array | undefined {
 }
 
 /**
- * get the mac address
- * @param params
+ * get the mac address using Deno.networkInterfaces()
+ * @returns sorted, deduplicated list of MAC addresses, or undefined if none found
  */
-async function getMacAddr(): Promise<string[] | undefined> {
-  // first, check the os of the system
-  const os = Deno.build.os
-  // use deno child process to execute the command
-  let command: Deno.Command
-  // under windows, the mac address is like 00-00-00-00-00-00, and under linux or darwin, the mac address is like 00:00:00:00:00:00
-  const regex = /(([0-9A-Fa-f]{2}[-:]){5}[0-9A-Fa-f]{2})|(([0-9A-Fa-f]{4}\.){2}[0-9A-Fa-f]{4})/gi
-  if (os === 'windows') {
-    command = new Deno.Command('ipconfig', {
-      args: ['/all']
-    })
-  } else if (os === 'darwin' || os === 'linux') {
-    command = new Deno.Command('ifconfig', {
-      args: ['-a']
-    })
-  } else {
-    throw new Error('unsupported os')
-  }
-
-  // execute the command
-  const process = await command.output()
-
-  // get the output
-  if (!process.success) {
-    return undefined
-  }
-
-  const output = new TextDecoder().decode(process.stdout)
-
-  // get the mac address, filter same mac address
-  const macAddrs = output
-    .match(regex)
-    // replace '-' to ':' and lowercase
-    ?.map((macAddr) => macAddr.toLowerCase().replace(/-/g, ':'))
-    // filter 00:00:00:00:00:00
-    ?.filter((macAddr) => macAddr !== '00:00:00:00:00:00')
-    // filter same mac address
-    ?.filter((macAddr, index, array) => array.indexOf(macAddr) === index)
+function getMacAddr(): string[] | undefined {
+  const macAddrs = Deno.networkInterfaces()
+    .map((iface) => iface.mac.toLowerCase().replace(/-/g, ':'))
+    .filter((mac) => mac !== '00:00:00:00:00:00')
+    .filter((mac, index, array) => array.indexOf(mac) === index)
     .sort()
 
-  if (!macAddrs || macAddrs.length === 0) {
-    return undefined
-  }
-
-  return macAddrs
+  return macAddrs.length > 0 ? macAddrs : undefined
 }
 
 const NetUtil = {
