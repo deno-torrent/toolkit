@@ -1,7 +1,7 @@
 # toolkit
 
-[![JSR](https://jsr.io/badges/@sloaix/toolkit)](https://jsr.io/@sloaix/toolkit)
-[![CI](https://github.com/sloaix/toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/sloaix/toolkit/actions/workflows/test.yml)
+[![JSR](https://jsr.io/badges/@deno-torrent/toolkit)](https://jsr.io/@deno-torrent/toolkit)
+[![CI](https://github.com/deno-torrent/toolkit/actions/workflows/test.yml/badge.svg)](https://github.com/deno-torrent/toolkit/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
 [English](#english) | [中文](#中文)
@@ -31,10 +31,10 @@ building BitTorrent clients or other binary-protocol applications in Deno.
 
 ```ts
 // From JSR (recommended for Deno 2)
-import { BitArray, BytesUtil, EncodeUtil, HashUtil, MultiFileReader, NetUtil, SimpleBuffer } from 'jsr:@sloaix/toolkit'
+import { BitArray, BytesUtil, EncodeUtil, HashUtil, MultiFileReader, NetUtil, SimpleBuffer } from 'jsr:@deno-torrent/toolkit'
 
 // Or import individual sub-modules
-import { HashUtil } from 'jsr:@sloaix/toolkit/src/hash/hash_util'
+import { HashUtil } from 'jsr:@deno-torrent/toolkit/src/hash/hash_util'
 ```
 
 ### Usage Examples
@@ -42,7 +42,7 @@ import { HashUtil } from 'jsr:@sloaix/toolkit/src/hash/hash_util'
 #### BitArray
 
 ```ts
-import { BitArray } from 'jsr:@sloaix/toolkit'
+import { BitArray } from 'jsr:@deno-torrent/toolkit'
 
 const bits = BitArray.fromInt(0b10101010)
 console.log(bits.toString())          // "10101010"
@@ -58,7 +58,7 @@ console.log(a.greaterThan(b))         // true
 #### BytesUtil
 
 ```ts
-import { BytesUtil } from 'jsr:@sloaix/toolkit'
+import { BytesUtil } from 'jsr:@deno-torrent/toolkit'
 
 // XOR two byte arrays
 BytesUtil.xor(Uint8Array.from([0xaa, 0xbb]), Uint8Array.from([0x55, 0x44]))
@@ -76,7 +76,7 @@ BytesUtil.bytes2Int(new Uint8Array([0, 255]))    // 255
 #### EncodeUtil
 
 ```ts
-import { EncodeUtil } from 'jsr:@sloaix/toolkit'
+import { EncodeUtil } from 'jsr:@deno-torrent/toolkit'
 
 EncodeUtil.isHexStr('deadbeef')                         // true
 EncodeUtil.isSha1HexStr('da39a3ee5e6b4b0d3255bfef95601890afd80709') // true
@@ -87,7 +87,7 @@ EncodeUtil.decodeBase64('aGk=')                         // Uint8Array [104, 105]
 #### HashUtil
 
 ```ts
-import { HashUtil } from 'jsr:@sloaix/toolkit'
+import { HashUtil } from 'jsr:@deno-torrent/toolkit'
 
 const sha1 = await HashUtil.sha1('hello')
 console.log(HashUtil.toHex(sha1))
@@ -104,7 +104,7 @@ console.log(HashUtil.toHex(HashUtil.md5('hello')))
 #### SimpleBuffer
 
 ```ts
-import { SimpleBuffer } from 'jsr:@sloaix/toolkit'
+import { SimpleBuffer } from 'jsr:@deno-torrent/toolkit'
 
 const buf = new SimpleBuffer()
 buf.write(new Uint8Array([1, 2, 3, 4, 5]))
@@ -117,7 +117,7 @@ buf.reset()
 #### MultiFileReader
 
 ```ts
-import { MultiFileReader } from 'jsr:@sloaix/toolkit'
+import { MultiFileReader } from 'jsr:@deno-torrent/toolkit'
 
 const reader = new MultiFileReader(['part1.bin', 'part2.bin', 'part3.bin'])
 
@@ -141,7 +141,7 @@ reader.close()
 #### NetUtil
 
 ```ts
-import { NetUtil } from 'jsr:@sloaix/toolkit'
+import { NetUtil } from 'jsr:@deno-torrent/toolkit'
 
 NetUtil.isIPv4Str('192.168.1.1')        // true
 NetUtil.isWellKnownPort(80)             // true
@@ -218,7 +218,7 @@ deno task test
 
 ```ts
 // 从 JSR 导入（Deno 2 推荐方式）
-import { BitArray, BytesUtil, EncodeUtil, HashUtil, MultiFileReader, NetUtil, SimpleBuffer } from 'jsr:@sloaix/toolkit'
+import { BitArray, BytesUtil, EncodeUtil, HashUtil, MultiFileReader, NetUtil, SimpleBuffer } from 'jsr:@deno-torrent/toolkit'
 ```
 
 ### 使用示例
@@ -226,7 +226,7 @@ import { BitArray, BytesUtil, EncodeUtil, HashUtil, MultiFileReader, NetUtil, Si
 #### BitArray — 位数组
 
 ```ts
-import { BitArray } from 'jsr:@sloaix/toolkit'
+import { BitArray } from 'jsr:@deno-torrent/toolkit'
 
 const bits = BitArray.fromInt(0b10101010)
 console.log(bits.toString())         // "10101010"
@@ -240,7 +240,7 @@ console.log(a.xor(b).toString())     // "11111111"
 #### HashUtil — 哈希工具
 
 ```ts
-import { HashUtil } from 'jsr:@sloaix/toolkit'
+import { HashUtil } from 'jsr:@deno-torrent/toolkit'
 
 const digest = await HashUtil.sha1('hello')
 console.log(HashUtil.toHex(digest))
@@ -254,7 +254,7 @@ console.log(HashUtil.toHex(HashUtil.md5('hello')))
 #### MultiFileReader — 多文件顺序读取
 
 ```ts
-import { MultiFileReader } from 'jsr:@sloaix/toolkit'
+import { MultiFileReader } from 'jsr:@deno-torrent/toolkit'
 
 // 将多个文件视为一个连续字节流
 const reader = new MultiFileReader(['part1.bin', 'part2.bin'])
@@ -270,7 +270,7 @@ reader.close()
 #### NetUtil — 网络工具
 
 ```ts
-import { NetUtil } from 'jsr:@sloaix/toolkit'
+import { NetUtil } from 'jsr:@deno-torrent/toolkit'
 
 NetUtil.isIPv4Str('192.168.1.1')  // true
 NetUtil.isWellKnownPort(80)       // true
